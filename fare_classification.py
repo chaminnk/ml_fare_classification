@@ -20,7 +20,15 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import RepeatedStratifiedKFold
 from matplotlib import pyplot
+from pyproj import Geod
 
+
+wgs84_geod = Geod(ellps='WGS84') #Distance will be measured on this ellipsoid - more accurate than a spherical method
+
+#Get distance between pairs of lat-lon points
+def Distance(lat1,lon1,lat2,lon2):
+  az12,az21,dist = wgs84_geod.inv(lon1,lat1,lon2,lat2) 
+  return dist
 
 
 def timer(start_time=None):
@@ -37,41 +45,53 @@ input_file = "train.csv"
 df = pd.read_csv(input_file)
 df.fillna(df.mean(), inplace=True)
 #df.fillna(0, inplace=True)
-X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
-##X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
-##X["pickup_time"] = [time.minute for time in X["pickup_time"]]
-##X["drop_time"] = X["drop_time"].astype('datetime64[m]')
-##X["drop_time"] = [time.minute for time in X["drop_time"]]
-
-X = X.iloc[:, 0:-1].values
-
+X = df
+##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
+X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
+X["pickup_time"] = [time.minute for time in X["pickup_time"]]
+X["drop_time"] = X["drop_time"].astype('datetime64[m]')
+X["drop_time"] = [time.minute for time in X["drop_time"]]
+X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
+X = df.drop(columns=["tripid","pick_lat","pick_lon","drop_lat","drop_lon","label"])
+#X = df.drop(columns=["tripid","label"])
+with pd.option_context('display.max_columns', None):  
+    print(X)
+X = X.iloc[:,:].values
+#print(X)
 
 df['output_label'] = (df['label'] == 'correct').astype('int')
 y = df["output_label"].values
 
 
+
 input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
-df2.fillna(df.mean(), inplace=True)
+df2.fillna(df2.mean(), inplace=True)
 #df2.fillna(0, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
-
-X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
-##X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
-##X2["pickup_time"] = [time.minute for time in X2["pickup_time"]]
-##X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
-##X2["drop_time"] = [time.minute for time in X2["drop_time"]]
-X2 = X2.iloc[:, 0:-1].values
+X2 = df2
+##X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
+X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
+X2["pickup_time"] = [time.minute for time in X2["pickup_time"]]
+X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
+X2["drop_time"] = [time.minute for time in X2["drop_time"]]
+X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
+X2 = df2.drop(columns=["tripid","pick_lat","pick_lon","drop_lat","drop_lon"])
+#X2 = df2.drop(columns=["tripid"])
+##with pd.option_context('display.max_columns', None):  
+##    print(X2)
+X2 = X2.iloc[:,:].values
+##print(X2)
 #print (df.iloc[4080:4085])
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
 #print(X_train)
 lr = 0.404
 def knnClassifier(X_train,X_test,y_train,y_test):
     print("knn")
-    model1 = KNeighborsClassifier(learning_rate=0.404)
+    model1 = KNeighborsClassifier()
     model1.fit(X_train, y_train)
     y_pred=model1.predict(X_test)
-    print(f1_score(y_test,y_pred,average='macro'))
+    print(f1_score(y_test,y_pred))
 
     # Look at parameters used by our current forest
     print('Parameters currently in use:\n')
@@ -89,9 +109,10 @@ def adaboostClassifier(X_train,X_test,y_train,y_test):
     print(model2.get_params())
     
 ##model3= GradientBoostingClassifier(learning_rate=lr,random_state=1)
-##
+##print('gbc')
 ##model3.fit(X_train, y_train)
-##print(model3.score(X_test,y_test))
+##pred3=model3.predict(X_test)
+##print(model3.score(y_test,pred3))
 
 ##model4=xgb.XGBClassifier(random_state=1,learning_rate=lr)
 ##model4=xgb.XGBClassifier(learning_rate =0.401,
@@ -126,8 +147,7 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
                                n_estimators=1110,
                                reg_alpha = 0.3,
                                max_depth=7,
-                               gamma=10,
-                               reg_lambda=1
+                               gamma=10
                                )
     
 ##    model4 = XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,
@@ -161,6 +181,7 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
     
     tripid_test.resize(8576, 1)
     data = np.column_stack([tripid_test, y_pred])
+    print(tripid_test)
     label = ["tripid", "prediction"]
     frame = pd.DataFrame(data, columns=label)
     file_path = "./xgb_output.csv"
@@ -221,6 +242,7 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
     model6.fit(X_train, y_train)
     y_pred=model6.predict(X_test)
     print(f1_score(y_test,y_pred))
+    
 ##    tripid_test.resize(8576, 1)
 ##    data = np.column_stack([tripid_test, y_pred])
 ##    #print(f1_score(y_test,y_pred,average='macro'))
@@ -237,6 +259,37 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 
 
 
+
+#knnClassifier(X_train,X_test,y_train,y_test)
+#adaboostClassifier(X_train,X_test,y_train,y_test)
+xgboostModel(X,X2,y,y_test,tripid_test)
+##xgboostModel(X_train,X_test,y_train,y_test,tripid_test)
+#randomForestModel(X_train,X_test,y_train,y_test,tripid_test)
+##randomForestModel(X,X2,y,y_test,tripid_test)
+#catBoost(X_train,X_test,y_train,y_test,tripid_test)
+#catBoost(X,X2,y,y_test,tripid_test)
+    
+##model = DecisionTreeClassifier()
+##model.fit(X_train, y_train)
+##y_pred=model.predict(X_test)
+##
+##print(f1_score(y_test,y_pred,average='macro'))
+##print('Parameters currently in use:\n')
+##print(model.get_params())
+
+
+##param_grid = {'n_neighbors':np.arange(1,50)}
+##knn = KNeighborsClassifier()
+##knn_cv= GridSearchCV(knn,param_grid,cv=5)
+##knn_cv.fit(X,y)
+##print (knn_cv.best_score_)
+##print(knn_cv.best_params_)
+
+##knn = KNeighborsClassifier(n_neighbors = 17)
+##knn.fit(X_train,Y_train)
+##result = knn.predict(X_test)
+##print(Y.shape)
+##print (result.shape)
 
 ##..................................................stacking
 ##def get_stacking():
@@ -286,8 +339,7 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 ##                               n_estimators=1110,
 ##                               reg_alpha = 0.3,
 ##                               max_depth=7,
-##                               gamma=10,
-##                               reg_lambda=1
+##                               gamma=10
 ##                               )
 ####	models['catboost'] = CatBoostClassifier(iterations=55, depth=3, learning_rate=0.407)
 ##	models['stacking'] = get_stacking()
@@ -312,36 +364,3 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 ### plot model performance for comparison
 ##pyplot.boxplot(results, labels=names, showmeans=True)
 ##pyplot.show()
-
-#knnClassifier(X_train,X_test,y_train,y_test)
-##adaboostClassifier(X_train,X_test,y_train,y_test)
-xgboostModel(X,X2,y,y_test,tripid_test)
-##xgboostModel(X_train,X_test,y_train,y_test,tripid_test)
-##randomForestModel(X_train,X_test,y_train,y_test,tripid_test)
-##randomForestModel(X,X2,y,y_test,tripid_test)
-##catBoost(X_train,X_test,y_train,y_test,tripid_test)
-#catBoost(X,X2,y,y_test,tripid_test)
-    
-##model = DecisionTreeClassifier()
-##model.fit(X_train, y_train)
-##y_pred=model.predict(X_test)
-##
-##print(f1_score(y_test,y_pred,average='macro'))
-##print('Parameters currently in use:\n')
-##print(model.get_params())
-
-
-##param_grid = {'n_neighbors':np.arange(1,50)}
-##knn = KNeighborsClassifier()
-##knn_cv= GridSearchCV(knn,param_grid,cv=5)
-##knn_cv.fit(X,y)
-##print (knn_cv.best_score_)
-##print(knn_cv.best_params_)
-
-##knn = KNeighborsClassifier(n_neighbors = 17)
-##knn.fit(X_train,Y_train)
-##result = knn.predict(X_test)
-##print(Y.shape)
-##print (result.shape)
-
-#np.savetxt('results_test.csv',results,delimiter=',',fmt="%s",header="tripid,prediction")
