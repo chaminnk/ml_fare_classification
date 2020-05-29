@@ -47,17 +47,13 @@ df.fillna(df.mean(), inplace=True)
 #df.fillna(0, inplace=True)
 X = df
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
-X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
-X["pickup_time"] = [time.minute for time in X["pickup_time"]]
-X["drop_time"] = X["drop_time"].astype('datetime64[m]')
-X["drop_time"] = [time.minute for time in X["drop_time"]]
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
-X = df.drop(columns=["tripid","pick_lat","pick_lon","drop_lat","drop_lon","label"])
+X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
 #X = df.drop(columns=["tripid","label"])
 with pd.option_context('display.max_columns', None):  
     print(X)
 X = X.iloc[:,:].values
-#print(X)
+print(X)
 
 df['output_label'] = (df['label'] == 'correct').astype('int')
 y = df["output_label"].values
@@ -71,17 +67,13 @@ df2.fillna(df2.mean(), inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
 ##X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
-X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
-X2["pickup_time"] = [time.minute for time in X2["pickup_time"]]
-X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
-X2["drop_time"] = [time.minute for time in X2["drop_time"]]
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
-X2 = df2.drop(columns=["tripid","pick_lat","pick_lon","drop_lat","drop_lon"])
+X2 = df2.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon"])
 #X2 = df2.drop(columns=["tripid"])
-##with pd.option_context('display.max_columns', None):  
-##    print(X2)
+with pd.option_context('display.max_columns', None):  
+    print(X2)
 X2 = X2.iloc[:,:].values
-##print(X2)
+print(X2)
 #print (df.iloc[4080:4085])
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
 #print(X_train)
@@ -128,14 +120,25 @@ def adaboostClassifier(X_train,X_test,y_train,y_test):
 ## seed=27)
 def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
     print("xgboost")
-    params = {
-        'min_child_weight': [1, 5, 10],
-        'gamma': [8, 9, 10, 12, 15],
-        'subsample': [0.8, 0.9, 1.0],
-        'colsample_bytree': [0.8, 0.9, 1.0],
-        'max_depth': [4, 5, 7]
-        }
-    param_comb = 50
+    
+##    n_estimators = [int(x) for x in np.linspace(start = 200, stop = 2000, num = 10)]
+##    learning_rate = []
+##    n = 0.402
+##    for i in range (0,51):
+##        n = n + 0.0001
+##        n = round(n,4)
+##        learning_rate.append(n)
+##    params = {
+##        'n_estimators':n_estimators,
+##        'learning_rate':learning_rate,
+##        'min_child_weight': [1, 5, 10],
+##        'gamma': [8, 9, 10, 12, 15],
+##        'subsample': [0.7,0.8, 0.9, 1.0,1.1],
+##        'colsample_bytree': [0.7,0.8, 0.9, 1.0,1.1],
+##        'max_depth': [4, 5, 7,9,11]
+##        }
+##    param_comb = 50
+    
 ##    model4 = XGBClassifier(learning_rate=0.404, n_estimators=600, objective='binary:logistic',
 ##                    silent=True, nthread=1)
     model4 = XGBClassifier(silent=False,
@@ -159,8 +162,9 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 ##              objective='binary:logistic', random_state=0, reg_alpha=0.3,
 ##              reg_lambda=1, scale_pos_weight=1, silent=False, subsample=1.0,
 ##              tree_method=None, validate_parameters=False, verbosity=None)
-    
-##    random_search = RandomizedSearchCV(model4, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=4, verbose=3, random_state=1001 )
+
+##    model4 = XGBClassifier()
+##    random_search = RandomizedSearchCV(model4, param_distributions=params, n_iter=100, cv = 3, scoring='roc_auc', n_jobs=-1, verbose=2, random_state=42 )
 ##    start_time = timer(None) # timing starts from this point for "start_time" variable
 ##    random_search.fit(X_train, y_train)
 ##    timer(start_time) # timing ends here for "start_time" variable
@@ -173,7 +177,10 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 ##    print('\n Best hyperparameters:')
 ##    print(random_search.best_params_)
 ##    results = pd.DataFrame(random_search.cv_results_)
-##    results.to_csv('xgb-random-grid-search-results-01.csv', tripid_test=False)
+##    results.to_csv('xgb-random-grid-search-results-01.csv', index=False)
+##    file_path = "./xgb_-random-grid-search-results-01.csv"
+##    with open(file_path, mode='w', newline='\n') as f:
+##        results.to_csv(f, float_format='%.2f', index=False)
 
     model4.fit(X_train, y_train)
     y_pred=model4.predict(X_test)
@@ -235,10 +242,10 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 ##                   'min_samples_leaf': min_samples_leaf,
 ##                   'bootstrap': bootstrap}
     
-    model6 = RandomForestClassifier()
+    model6 = RandomForestClassifier(n_estimators = 1600, min_samples_split = 5, min_samples_leaf = 1, max_features = 'sqrt', max_depth = 70, bootstrap = False)
 ##    rf_random = RandomizedSearchCV(estimator = model6, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
 ##    rf_random.fit(X_train, y_train)
-##    rf_random.best_params_
+##    print(rf_random.best_params_)
     model6.fit(X_train, y_train)
     y_pred=model6.predict(X_test)
     print(f1_score(y_test,y_pred))
@@ -254,8 +261,8 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
     
     # Look at parameters used by our current forest
 
-    print('Parameters currently in use:\n')
-    print(model6.get_params())
+##    print('Parameters currently in use:\n')
+##    print(model6.get_params())
 
 
 
@@ -264,7 +271,7 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 #adaboostClassifier(X_train,X_test,y_train,y_test)
 xgboostModel(X,X2,y,y_test,tripid_test)
 ##xgboostModel(X_train,X_test,y_train,y_test,tripid_test)
-#randomForestModel(X_train,X_test,y_train,y_test,tripid_test)
+##randomForestModel(X_train,X_test,y_train,y_test,tripid_test)
 ##randomForestModel(X,X2,y,y_test,tripid_test)
 #catBoost(X_train,X_test,y_train,y_test,tripid_test)
 #catBoost(X,X2,y,y_test,tripid_test)
