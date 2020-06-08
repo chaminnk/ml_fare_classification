@@ -49,10 +49,12 @@ df = pd.read_csv(input_file)
 ##df.dropna(inplace= True)
 ##df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
+##df.fillna(df.mean(), inplace=True)
+
 X = df
 ##print(X.dtypes)
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
-##X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
+X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
 ##X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
 ##X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
 ##X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
@@ -61,7 +63,7 @@ X = df
 ##X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
 ##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
 ##
-##X["drop_time"] = X["drop_time"].astype('datetime64[m]')
+X["drop_time"] = X["drop_time"].astype('datetime64[m]')
 ##X["drop_year"] = X["drop_time"].dt.year.astype('float')
 ##X["drop_month"] = X["drop_time"].dt.month.astype('float')
 ##X["drop_day"] = X["drop_time"].dt.day.astype('float')
@@ -79,8 +81,11 @@ X = df
 
 ##X["trip_duration"] = X["drop_time"]-X["pickup_time"]
 ##X["trip_duration"] = X["trip_duration"].dt.total_seconds() #very less important feature
-##X['ride_fare'] = X['fare']-X['meter_waiting_fare']-X['additional_fare']
-X['fare_duration_ratio'] = X['fare']/X["duration"]
+X["delay"] = X["drop_time"]-X["pickup_time"]
+X["delay"] = X["delay"].dt.total_seconds()
+X["delay"] = X["delay"]-X["duration"]
+
+##X['fare_duration_ratio'] = X['fare']/X["duration"]
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
 X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
 
@@ -104,7 +109,7 @@ df2 = pd.read_csv(input_file2)
 ##df2.reset_index(drop=True,inplace= True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
-##X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
+X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
 ##X2["pickup_year"] = X2["pickup_time"].dt.year.astype('float')
 ##X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
 ##X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
@@ -113,7 +118,7 @@ X2 = df2
 ##X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
 ##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
 ##
-##X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
+X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
 ##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
 ##X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
 ##X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
@@ -126,6 +131,9 @@ X2 = df2
 ##print(X2.dtypes)
 ##X2["trip_duration"] = X2["drop_time"]-X2["pickup_time"]
 ##X2["trip_duration"] = X2["trip_duration"].dt.total_seconds()
+X2["delay"] = X2["drop_time"]-X2["pickup_time"]
+X2["delay"] = X2["delay"].dt.total_seconds()
+X2["delay"] = X2["delay"]-X2["duration"]
 X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
 X2 = df2.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon"])
@@ -249,16 +257,16 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
     model4.fit(X_train, y_train)
 
     y_pred=model4.predict(X_test)
-##    print(f1_score(y_test,y_pred))
+    print(f1_score(y_test,y_pred))
 
     #create output csv file
-    tripid_test.resize(8576, 1)
-    data = np.column_stack([tripid_test, y_pred])
-    label = ["tripid", "prediction"]
-    frame = pd.DataFrame(data, columns=label)
-    file_path = "./xgb_output.csv"
-    with open(file_path, mode='w', newline='\n') as f:
-        frame.to_csv(f, float_format='%.2f', index=False, header=True)
+##    tripid_test.resize(8576, 1)
+##    data = np.column_stack([tripid_test, y_pred])
+##    label = ["tripid", "prediction"]
+##    frame = pd.DataFrame(data, columns=label)
+##    file_path = "./xgb_output.csv"
+##    with open(file_path, mode='w', newline='\n') as f:
+##        frame.to_csv(f, float_format='%.2f', index=False, header=True)
 
     # plot feature importance
     plot_importance(model4)
@@ -269,17 +277,17 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 
 def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print("Catboost")
-####    eval_pool = Pool(X_test, y_test)
+##    eval_pool = Pool(X_test, y_test)
     ##categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations = 152,verbose = 100)
+    model5 = CatBoostClassifier(iterations=214, verbose = 100)
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
     model5.fit(X_train, y_train)
 
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
-    
+##    
     data = np.column_stack([tripid_test, y_pred])
     label = ["tripid", "prediction"]
     frame = pd.DataFrame(data, columns=label)
@@ -315,7 +323,8 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 ##                   'min_samples_leaf': min_samples_leaf,
 ##                   'bootstrap': bootstrap}
     
-    model6 = RandomForestClassifier(n_estimators = 1600, min_samples_split = 5, min_samples_leaf = 1, max_features = 'sqrt', max_depth = 70, bootstrap = False)
+##    model6 = RandomForestClassifier(n_estimators = 1600, min_samples_split = 5, min_samples_leaf = 1, max_features = 'sqrt', max_depth = 70, bootstrap = False)
+    model6 = RandomForestClassifier()
 ##    rf_random = RandomizedSearchCV(estimator = model6, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
 ##    rf_random.fit(X_train, y_train)
 ##    print(rf_random.best_params_)
@@ -381,18 +390,8 @@ catBoost(X,X2,y,y_test,tripid_test)
 ####	level0.append(('svm', SVC()))
 ####	level0.append(('bayes', GaussianNB()))
 ####	level0.append(('rf', RandomForestClassifier()))
-##	level0.append(('xgboost',XGBClassifier(silent=False,
-##                               scale_pos_weight=1,
-##                               learning_rate=0.404,
-##                               colsample_bytree = 0.9,
-##                               subsample = 0.9,
-##                               objective='binary:logistic',
-##                               n_estimators=1110,
-##                               reg_alpha = 0.3,
-##                               max_depth=7,
-##                               gamma=10
-##                               )))
-##	level0.append(('catboost', CatBoostClassifier(iterations=55, depth=3, learning_rate=0.407)))
+##	level0.append(('xgboost',XGBClassifier(n_estimators=90)))
+##	level0.append(('catboost', CatBoostClassifier(iterations = 152,verbose = 100)))
 ##	
 ##	# define meta learner model
 ##	level1 = LogisticRegression()
@@ -409,18 +408,8 @@ catBoost(X,X2,y,y_test,tripid_test)
 ####	models['svm'] = SVC()
 ####	models['bayes'] = GaussianNB()
 ####	models['rf'] = RandomForestClassifier()
-##	models['xgboost'] = XGBClassifier(silent=False,
-##                               scale_pos_weight=1,
-##                               learning_rate=0.404,
-##                               colsample_bytree = 0.9,
-##                               subsample = 0.9,
-##                               objective='binary:logistic',
-##                               n_estimators=1110,
-##                               reg_alpha = 0.3,
-##                               max_depth=7,
-##                               gamma=10
-##                               )
-##	models['catboost'] = CatBoostClassifier(iterations=55, depth=3, learning_rate=0.407)
+##	models['xgboost'] = XGBClassifier(n_estimators=90)
+##	models['catboost'] = CatBoostClassifier(iterations = 152,verbose = 100)
 ##	models['stacking'] = get_stacking()
 ##	return models
 ## 
@@ -442,5 +431,5 @@ catBoost(X,X2,y,y_test,tripid_test)
 ##	print('>%s %.3f (%.3f)' % (name, np.mean(scores), np.std(scores)))
 ### plot model performance for comparison
 ##pyplot.boxplot(results, labels=names, showmeans=True)
-##pyplot.show()
+pyplot.show()
 
