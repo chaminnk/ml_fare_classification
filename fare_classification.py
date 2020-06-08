@@ -248,8 +248,7 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 
     model4.fit(X_train, y_train)
 
-    #k-fold cross validation
-##    y_pred=model4.predict(X_test)
+    y_pred=model4.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
 
     #create output csv file
