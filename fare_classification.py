@@ -53,22 +53,22 @@ X = df
 ##print(X.dtypes)
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
 X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
-##X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
-##X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
-##X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
-##X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
-##X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
-##X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
-##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
+X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
+X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
+X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
+X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
+X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
+X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
+X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
 ##
 X["drop_time"] = X["drop_time"].astype('datetime64[m]')
-##X["drop_year"] = X["drop_time"].dt.year.astype('float')
-##X["drop_month"] = X["drop_time"].dt.month.astype('float')
-##X["drop_day"] = X["drop_time"].dt.day.astype('float')
-##X["drop_week"] = X["drop_time"].dt.week.astype('float')
-##X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
-##X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
-##X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
+X["drop_year"] = X["drop_time"].dt.year.astype('float')
+X["drop_month"] = X["drop_time"].dt.month.astype('float')
+X["drop_day"] = X["drop_time"].dt.day.astype('float')
+X["drop_week"] = X["drop_time"].dt.week.astype('float')
+X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
+X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
+X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 
 ##X["pickup_time"]= X["pickup_time"].dt.time
 ##X["drop_time"]= X["drop_time"].dt.time
@@ -77,10 +77,10 @@ X["drop_time"] = X["drop_time"].astype('datetime64[m]')
 ##with pd.option_context('display.max_columns', None):  
 ##    print(X)
 
-X["trip_duration"] = X["drop_time"]-X["pickup_time"]
-X["trip_duration"] = X["trip_duration"].dt.total_seconds() #very less important feature
+##X["trip_duration"] = X["drop_time"]-X["pickup_time"]
+##X["trip_duration"] = X["trip_duration"].dt.total_seconds() #very less important feature
 ##X['ride_fare'] = X['fare']-X['meter_waiting_fare']-X['additional_fare']
-##X['fare_duration_ratio'] = X['fare']/X["duration"]
+X['fare_duration_ratio'] = X['fare']/X["duration"]
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
 X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
 
@@ -105,28 +105,28 @@ df2 = pd.read_csv(input_file2)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
 X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
-##X2["pickup_year"] = X2["pickup_time"].dt.year.astype('float')
-##X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
-##X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
-##X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
-##X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
-##X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
-##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
+X2["pickup_year"] = X2["pickup_time"].dt.year.astype('float')
+X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
+X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
+X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
+X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
+X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
+X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
 ##
 X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
-##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
-##X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
-##X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
-##X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
-##X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
-##X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
-##X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
+X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
+X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
+X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
+X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
+X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
+X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
+X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ####with pd.option_context('display.max_columns', None):  
 ####    print(X2)
 ##print(X2.dtypes)
-X2["trip_duration"] = X2["drop_time"]-X2["pickup_time"]
-X2["trip_duration"] = X2["trip_duration"].dt.total_seconds()
-##X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
+##X2["trip_duration"] = X2["drop_time"]-X2["pickup_time"]
+##X2["trip_duration"] = X2["trip_duration"].dt.total_seconds()
+X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
 X2 = df2.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon"])
 #X2 = df2.drop(columns=["tripid"])
