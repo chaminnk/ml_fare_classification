@@ -52,23 +52,23 @@ df = pd.read_csv(input_file)
 X = df
 ##print(X.dtypes)
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
-X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
-X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
-X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
-X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
-X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
-X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
-X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
-X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
+##X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
+##X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
+##X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
+##X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
+##X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
+##X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
+##X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
+##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
 ##
-X["drop_time"] = X["drop_time"].astype('datetime64[m]')
-X["drop_year"] = X["drop_time"].dt.year.astype('float')
-X["drop_month"] = X["drop_time"].dt.month.astype('float')
-X["drop_day"] = X["drop_time"].dt.day.astype('float')
-X["drop_week"] = X["drop_time"].dt.week.astype('float')
-X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
-X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
-X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
+##X["drop_time"] = X["drop_time"].astype('datetime64[m]')
+##X["drop_year"] = X["drop_time"].dt.year.astype('float')
+##X["drop_month"] = X["drop_time"].dt.month.astype('float')
+##X["drop_day"] = X["drop_time"].dt.day.astype('float')
+##X["drop_week"] = X["drop_time"].dt.week.astype('float')
+##X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
+##X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
+##X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 
 ##X["pickup_time"]= X["pickup_time"].dt.time
 ##X["drop_time"]= X["drop_time"].dt.time
@@ -104,23 +104,23 @@ df2 = pd.read_csv(input_file2)
 ##df2.reset_index(drop=True,inplace= True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
-X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
-X2["pickup_year"] = X2["pickup_time"].dt.year.astype('float')
-X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
-X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
-X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
-X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
-X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
-X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
+##X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
+##X2["pickup_year"] = X2["pickup_time"].dt.year.astype('float')
+##X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
+##X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
+##X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
+##X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
+##X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
+##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
 ##
-X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
-X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
-X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
-X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
-X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
-X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
-X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
-X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
+##X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
+##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
+##X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
+##X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
+##X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
+##X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
+##X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
+##X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ####with pd.option_context('display.max_columns', None):  
 ####    print(X2)
 ##print(X2.dtypes)
@@ -272,20 +272,20 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
 ####    eval_pool = Pool(X_test, y_test)
     ##categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier( iterations = 152,verbose = 100)
+    model5 = CatBoostClassifier(iterations = 152,verbose = 100)
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
     model5.fit(X_train, y_train)
 
     y_pred=model5.predict(X_test)
-    print(f1_score(y_test,y_pred))
+##    print(f1_score(y_test,y_pred))
     
-##    data = np.column_stack([tripid_test, y_pred])
-##    label = ["tripid", "prediction"]
-##    frame = pd.DataFrame(data, columns=label)
-##    file_path = "./catboost_output.csv"
-##    with open(file_path, mode='w', newline='\n') as f:
-##        frame.to_csv(f, float_format='%.2f', index=False, header=True)
+    data = np.column_stack([tripid_test, y_pred])
+    label = ["tripid", "prediction"]
+    frame = pd.DataFrame(data, columns=label)
+    file_path = "./catboost_output.csv"
+    with open(file_path, mode='w', newline='\n') as f:
+        frame.to_csv(f, float_format='%.2f', index=False, header=True)
     
     # Look at parameters used by our current forest
     
@@ -342,12 +342,12 @@ def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
 
 #knnClassifier(X_train,X_test,y_train,y_test)
 #adaboostClassifier(X_train,X_test,y_train,y_test)
-xgboostModel(X,X2,y,y_test,tripid_test)
+##xgboostModel(X,X2,y,y_test,tripid_test)
 ##xgboostModel(X_train,X_test,y_train,y_test,tripid_test)
 ##randomForestModel(X_train,X_test,y_train,y_test,tripid_test)
 ##randomForestModel(X,X2,y,y_test,tripid_test)
 ##catBoost(X_train,X_test,y_train,y_test,tripid_test)
-##catBoost(X,X2,y,y_test,tripid_test)
+catBoost(X,X2,y,y_test,tripid_test)
     
 ##model = DecisionTreeClassifier()
 ##model.fit(X_train, y_train)
