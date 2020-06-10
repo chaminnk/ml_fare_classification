@@ -16,7 +16,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 from xgboost import plot_importance
-from catboost import CatBoostClassifier, Pool
+from catboost import CatBoostClassifier, Pool, EFstrType
 import lightgbm as lgb
 from sklearn.linear_model import LogisticRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -52,7 +52,7 @@ df = pd.read_csv(input_file)
 ##df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
 ##df.fillna(df.mean(), inplace=True)
-
+df.fillna(-999, inplace=True)
 X = df
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
 X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
@@ -86,7 +86,7 @@ X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 ##X["delay"] = X["drop_time"]-X["pickup_time"]
 ##X["delay"] = X["delay"].dt.total_seconds()
 ##X["delay"] = X["delay"]-X["duration"]
-
+X["mobile_duration"] = X["duration"]-X["meter_waiting"]
 X['fare_duration_ratio'] = X['fare']/X["duration"]
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
 ##X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
@@ -111,6 +111,7 @@ input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
 ##df2.dropna(inplace= True)
 ##df2.reset_index(drop=True,inplace= True)
+df2.fillna(-999, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
 X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
@@ -138,6 +139,7 @@ X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ##X2["delay"] = X2["drop_time"]-X2["pickup_time"]
 ##X2["delay"] = X2["delay"].dt.total_seconds()
 ##X2["delay"] = X2["delay"]-X2["duration"]
+X2["mobile_duration"] = X2["duration"]-X2["meter_waiting"]
 X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
 X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
@@ -283,12 +285,13 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 
 def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print("Catboost")
-##    eval_pool = Pool(X_test, y_test)
+    #eval_pool = Pool(X_test, y_test) #pool for eval_set
+    train_pool = Pool(X_train, y_train)
     categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
     print(X_train.dtypes)
     print(categorical_features_indices)
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=218, verbose = 100)
+    model5 = CatBoostClassifier(iterations=249) #249 for test 209 for validate
 ##    model5 = Pipeline((
 ##      ("standard_scaler", StandardScaler()),
 ##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
@@ -299,7 +302,13 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
 
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
-##    
+##
+##    feature_importance = model5.get_feature_importance(data=train_pool, type=EFstrType.FeatureImportance, prettified=True, thread_count=-1)
+##    feature_importance_df = pd.DataFrame(feature_importance, columns=['Feature Id', 'Importances'])
+##    feature_importance_df['Feature Id'] = feature_importance_df['Feature Id'].apply(lambda b: b)
+##    feature_importance_df.set_index('Feature Id').plot(kind='barh', figsize=(18, 10), fontsize=14)
+##    pyplot.show()
+
     data = np.column_stack([tripid_test, y_pred])
     label = ["tripid", "prediction"]
     frame = pd.DataFrame(data, columns=label)
@@ -308,7 +317,8 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
         frame.to_csv(f, float_format='%.2f', index=False, header=True)
     
     # Look at parameters used by our current forest
-    
+##    arr = model5.get_feature_importance()
+##    print(arr)
     print('Parameters currently in use:\n')
     print(model5.get_params())
     
