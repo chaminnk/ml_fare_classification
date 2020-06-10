@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -52,25 +54,25 @@ df = pd.read_csv(input_file)
 ##df.fillna(df.mean(), inplace=True)
 
 X = df
-##print(X.dtypes)
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
 X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
 ##X["pickup_year"] = X["pickup_time"].dt.year.astype('float')
 ##X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
 ##X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
 ##X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
-##X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
-##X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
-##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
+X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
+X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
+X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
 ##
 X["drop_time"] = X["drop_time"].astype('datetime64[m]')
+
 ##X["drop_year"] = X["drop_time"].dt.year.astype('float')
 ##X["drop_month"] = X["drop_time"].dt.month.astype('float')
 ##X["drop_day"] = X["drop_time"].dt.day.astype('float')
 ##X["drop_week"] = X["drop_time"].dt.week.astype('float')
-##X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
-##X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
-##X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
+X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
+X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
+X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 
 ##X["pickup_time"]= X["pickup_time"].dt.time
 ##X["drop_time"]= X["drop_time"].dt.time
@@ -81,28 +83,30 @@ X["drop_time"] = X["drop_time"].astype('datetime64[m]')
 
 ##X["trip_duration"] = X["drop_time"]-X["pickup_time"]
 ##X["trip_duration"] = X["trip_duration"].dt.total_seconds() #very less important feature
-X["delay"] = X["drop_time"]-X["pickup_time"]
-X["delay"] = X["delay"].dt.total_seconds()
-X["delay"] = X["delay"]-X["duration"]
+##X["delay"] = X["drop_time"]-X["pickup_time"]
+##X["delay"] = X["delay"].dt.total_seconds()
+##X["delay"] = X["delay"]-X["duration"]
 
-##X['fare_duration_ratio'] = X['fare']/X["duration"]
+X['fare_duration_ratio'] = X['fare']/X["duration"]
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
-X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
+##X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
+X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
 
 #X = df.drop(columns=["tripid","label"])
 ##with pd.option_context('display.max_columns', None):  
 ##    print(X)
 ##print(X.dtypes)
 ##
-with pd.option_context('display.max_columns', None):  
-    print(X)
-X = X.iloc[:,:].values
+##with pd.option_context('display.max_columns', None):  
+##    print(X)
+##X = X.iloc[:,:].values
 ##print(X)
 
 df['output_label'] = (df['label'] == 'correct').astype('int')
-y = df["output_label"].values
-
-
+y = df["output_label"]
+##y = df.drop(columns=["tripid","additional_fare","duration","meter_waiting","meter_waiting_fare","meter_waiting_till_pickup","pickup_time","drop_time","fare","label","pick_lat","pick_lon","drop_lat","drop_lon","label"])
+##with pd.option_context('display.max_columns', None):  
+##    print(y)
 input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
 ##df2.dropna(inplace= True)
@@ -114,41 +118,39 @@ X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
 ##X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
 ##X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
 ##X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
-##X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
-##X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
-##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
+X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
+X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
+X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
 ##
 X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
 ##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
 ##X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
 ##X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
 ##X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
-##X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
-##X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
-##X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
+X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
+X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
+X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ####with pd.option_context('display.max_columns', None):  
 ####    print(X2)
 ##print(X2.dtypes)
 ##X2["trip_duration"] = X2["drop_time"]-X2["pickup_time"]
 ##X2["trip_duration"] = X2["trip_duration"].dt.total_seconds()
-X2["delay"] = X2["drop_time"]-X2["pickup_time"]
-X2["delay"] = X2["delay"].dt.total_seconds()
-X2["delay"] = X2["delay"]-X2["duration"]
+##X2["delay"] = X2["drop_time"]-X2["pickup_time"]
+##X2["delay"] = X2["delay"].dt.total_seconds()
+##X2["delay"] = X2["delay"]-X2["duration"]
 X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
-X2 = df2.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon"])
+X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
 #X2 = df2.drop(columns=["tripid"])
 ##with pd.option_context('display.max_columns', None):  
 ##    print(X2)
 ##print(X2.dtypes)
 
-X2 = X2.iloc[:,:].values
+##X2 = X2.iloc[:,:].values
 ##print(X2)
 #print (df.iloc[4080:4085])
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
 ##print(len(X))
-##print(X_train)
-##print(X_test)
 lr = 0.404
 def knnClassifier(X_train,X_test,y_train,y_test):
     print("knn")
@@ -213,17 +215,17 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
     
 ##    model4 = XGBClassifier(learning_rate=0.404, n_estimators=600, objective='binary:logistic',
 ##                    silent=True, nthread=1)
-    model4 = XGBClassifier(silent=False,
-                               scale_pos_weight=1,
-                               learning_rate=0.405,
-                               colsample_bytree = 0.9,
-                               subsample = 0.9,
-                               objective='binary:logistic',
-                               n_estimators=1200,
-                               reg_alpha = 0.3,
-                               max_depth=7,
-                               gamma=10,
-                               )
+##    model4 = XGBClassifier(silent=False,
+##                               scale_pos_weight=1,
+##                               learning_rate=0.405,
+##                               colsample_bytree = 0.9,
+##                               subsample = 0.9,
+##                               objective='binary:logistic',
+##                               n_estimators=1200,
+##                               reg_alpha = 0.3,
+##                               max_depth=7,
+##                               gamma=10,
+##                               )
 ##    
 ##    model4 = XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,
 ##              colsample_bynode=1, colsample_bytree=1.0, gamma=10, gpu_id=-1,
@@ -234,8 +236,11 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 ##              objective='binary:logistic', random_state=0, reg_alpha=0.3,
 ##              reg_lambda=1, scale_pos_weight=1, silent=False, subsample=1.0,
 ##              tree_method=None, validate_parameters=False, verbosity=None)
-
     model4 = XGBClassifier(n_estimators=90)
+##    model4 = Pipeline((
+##      ("standard_scaler", StandardScaler()),
+##      ("xgb", XGBClassifier(n_estimators=90)),
+##      ))
 ##    random_search = RandomizedSearchCV(model4, param_distributions=params, n_iter=100, cv = 3, scoring='roc_auc', n_jobs=-1, verbose=2, random_state=42 )
 ##    start_time = timer(None) # timing starts from this point for "start_time" variable
 ##    random_search.fit(X_train, y_train)
@@ -253,6 +258,7 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 ##    file_path = "./xgb_-random-grid-search-results-01.csv"
 ##    with open(file_path, mode='w', newline='\n') as f:
 ##        results.to_csv(f, float_format='%.2f', index=False)
+    print(X_train.dtypes)
 
     model4.fit(X_train, y_train)
 
@@ -278,12 +284,18 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print("Catboost")
 ##    eval_pool = Pool(X_test, y_test)
-    ##categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
+    categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
+    print(X_train.dtypes)
+    print(categorical_features_indices)
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=214, verbose = 100)
+    model5 = CatBoostClassifier(iterations=218, verbose = 100)
+##    model5 = Pipeline((
+##      ("standard_scaler", StandardScaler()),
+##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
+##      ))
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
-    model5.fit(X_train, y_train)
+    model5.fit(X_train, y_train,cat_features=categorical_features_indices)
 
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
@@ -431,5 +443,5 @@ catBoost(X,X2,y,y_test,tripid_test)
 ##	print('>%s %.3f (%.3f)' % (name, np.mean(scores), np.std(scores)))
 ### plot model performance for comparison
 ##pyplot.boxplot(results, labels=names, showmeans=True)
-pyplot.show()
+##pyplot.show()
 
