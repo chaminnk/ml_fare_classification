@@ -47,12 +47,18 @@ def timer(start_time=None):
 
 input_file = "train.csv"
 df = pd.read_csv(input_file)
+##with pd.option_context('display.max_columns', None):
+##  print(df.describe())
+##with pd.option_context('display.max_columns', None):
+##  print(df)
 ##print(df.isnull().sum())
 ##df.dropna(inplace= True)
 ##df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
-##df.fillna(df.mean(), inplace=True)
-df.fillna(-999, inplace=True)
+df.fillna(df.mean(), inplace=True)
+##with pd.option_context('display.max_columns', None):
+##  print(df)
+##df.fillna(-999, inplace=True)
 X = df
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
 X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
@@ -87,11 +93,18 @@ X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 ##X["delay"] = X["delay"].dt.total_seconds()
 ##X["delay"] = X["delay"]-X["duration"]
 X["mobile_duration"] = X["duration"]-X["meter_waiting"]
-X['fare_duration_ratio'] = X['fare']/X["duration"]
+X['total_duration'] = X['duration']+X['meter_waiting_till_pickup']
+X['fare_duration_ratio'] = X['fare']/X['total_duration'] #assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X['meter_waiting_fare_duration_ratio'] = X['meter_waiting_fare']/X['meter_waiting']
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
+X['fare_distance_ratio'] = X['fare']/X['distance']
+X['fare2']=X['fare']-X['meter_waiting_fare']-X['additional_fare']#assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X['fare2_time_ratio'] = X['fare2']/(X["mobile_duration"]+X['meter_waiting_till_pickup'])
+X['additional_fare_distance_ratio'] = X['additional_fare']/X['distance']
 ##X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
 X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
-
+with pd.option_context('display.max_columns', None):  
+    print(X)
 #X = df.drop(columns=["tripid","label"])
 ##with pd.option_context('display.max_columns', None):  
 ##    print(X)
@@ -111,7 +124,8 @@ input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
 ##df2.dropna(inplace= True)
 ##df2.reset_index(drop=True,inplace= True)
-df2.fillna(-999, inplace=True)
+df.fillna(df.mean(), inplace=True)
+##df2.fillna(-999, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
 X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
@@ -140,8 +154,14 @@ X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ##X2["delay"] = X2["delay"].dt.total_seconds()
 ##X2["delay"] = X2["delay"]-X2["duration"]
 X2["mobile_duration"] = X2["duration"]-X2["meter_waiting"]
-X2['fare_duration_ratio'] = X2['fare']/X2["duration"]
+X2['total_duration'] = X2['duration']+X2['meter_waiting_till_pickup']
+X2['fare_duration_ratio'] = X2['fare']/X2['total_duration'] #assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X2['meter_waiting_fare_duration_ratio'] = X2['meter_waiting_fare']/X2['meter_waiting']
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
+X2['fare_distance_ratio'] = X2['fare']/X2['distance']
+X2['fare2']=X2['fare']-X2['meter_waiting_fare']-X2['additional_fare']#assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X2['fare2_time_ratio'] = X2['fare2']/(X2["mobile_duration"]+X2['meter_waiting_till_pickup'])
+X2['additional_fare_distance_ratio'] = X2['additional_fare']/X2['distance']
 X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
 #X2 = df2.drop(columns=["tripid"])
 ##with pd.option_context('display.max_columns', None):  
@@ -285,13 +305,13 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 
 def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print("Catboost")
-    #eval_pool = Pool(X_test, y_test) #pool for eval_set
+##    eval_pool = Pool(X_test, y_test) #pool for eval_set
     train_pool = Pool(X_train, y_train)
     categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
     print(X_train.dtypes)
     print(categorical_features_indices)
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=249) #249 for test 209 for validate
+    model5 = CatBoostClassifier(iterations=227) #249 for test 209 for validate
 ##    model5 = Pipeline((
 ##      ("standard_scaler", StandardScaler()),
 ##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
@@ -299,10 +319,10 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
     model5.fit(X_train, y_train,cat_features=categorical_features_indices)
-
+##
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
-##
+####
 ##    feature_importance = model5.get_feature_importance(data=train_pool, type=EFstrType.FeatureImportance, prettified=True, thread_count=-1)
 ##    feature_importance_df = pd.DataFrame(feature_importance, columns=['Feature Id', 'Importances'])
 ##    feature_importance_df['Feature Id'] = feature_importance_df['Feature Id'].apply(lambda b: b)
@@ -413,15 +433,15 @@ catBoost(X,X2,y,y_test,tripid_test)
 ####	level0.append(('bayes', GaussianNB()))
 ####	level0.append(('rf', RandomForestClassifier()))
 ##	level0.append(('xgboost',XGBClassifier(n_estimators=90)))
-##	level0.append(('catboost', CatBoostClassifier(iterations = 152,verbose = 100)))
+##	level0.append(('catboost', CatBoostClassifier(iterations = 209,verbose = 100)))
 ##	
 ##	# define meta learner model
 ##	level1 = LogisticRegression()
 ##	# define the stacking ensemble
 ##	model = StackingClassifier(estimators=level0, final_estimator=level1, cv=5)
 ##	return model
-## 
-### get a list of models to evaluate
+
+# get a list of models to evaluate
 ##def get_models():
 ##	models = dict()
 ##	models['lr'] = LogisticRegression()
@@ -431,16 +451,16 @@ catBoost(X,X2,y,y_test,tripid_test)
 ####	models['bayes'] = GaussianNB()
 ####	models['rf'] = RandomForestClassifier()
 ##	models['xgboost'] = XGBClassifier(n_estimators=90)
-##	models['catboost'] = CatBoostClassifier(iterations = 152,verbose = 100)
+##	models['catboost'] = CatBoostClassifier(iterations = 209,verbose = 100)
 ##	models['stacking'] = get_stacking()
 ##	return models
-## 
+##
 ### evaluate a give model using cross-validation
 ##def evaluate_model(model):
 ##	cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
 ##	scores = cross_val_score(model, X, y, scoring='f1', cv=cv, n_jobs=-1, error_score='raise')
 ##	return scores
-## 
+##
 ##
 ### get the models to evaluate
 ##models = get_models()
