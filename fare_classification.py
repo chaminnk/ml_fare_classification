@@ -102,9 +102,9 @@ X['fare2']=X['fare']-X['meter_waiting_fare']-X['additional_fare']#assuming Fare 
 X['fare2_time_ratio'] = X['fare2']/(X["mobile_duration"]+X['meter_waiting_till_pickup'])
 X['additional_fare_distance_ratio'] = X['additional_fare']/X['distance']
 ##X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
-X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
-with pd.option_context('display.max_columns', None):  
-    print(X)
+## X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
+## with pd.option_context('display.max_columns', None):  
+##     print(X)
 #X = df.drop(columns=["tripid","label"])
 ##with pd.option_context('display.max_columns', None):  
 ##    print(X)
