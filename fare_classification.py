@@ -52,10 +52,10 @@ df = pd.read_csv(input_file)
 ##with pd.option_context('display.max_columns', None):
 ##  print(df)
 ##print(df.isnull().sum())
-##df.dropna(inplace= True)
-##df.reset_index(drop=True,inplace= True)
+df.dropna(inplace= True)
+df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
-df.fillna(df.mean(), inplace=True)
+##df.fillna(df.mean(), inplace=True)
 ##with pd.option_context('display.max_columns', None):
 ##  print(df)
 ##df.fillna(-999, inplace=True)
@@ -110,8 +110,8 @@ X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
 ##    print(X)
 ##print(X.dtypes)
 ##
-##with pd.option_context('display.max_columns', None):  
-##    print(X)
+##with pd.option_context('display.max_rows', None):  
+##    print(X.drop_day_of_week)
 ##X = X.iloc[:,:].values
 ##print(X)
 
@@ -122,9 +122,9 @@ y = df["output_label"]
 ##    print(y)
 input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
-##df2.dropna(inplace= True)
-##df2.reset_index(drop=True,inplace= True)
-df.fillna(df.mean(), inplace=True)
+df2.dropna(inplace= True)
+df2.reset_index(drop=True,inplace= True)
+##df.fillna(df.mean(), inplace=True)
 ##df2.fillna(-999, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
@@ -311,7 +311,7 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print(X_train.dtypes)
     print(categorical_features_indices)
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=227) #249 for test 209 for validate
+    model5 = CatBoostClassifier(iterations=179) #249 for test 209 for validate
 ##    model5 = Pipeline((
 ##      ("standard_scaler", StandardScaler()),
 ##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
@@ -335,7 +335,7 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     file_path = "./catboost_output.csv"
     with open(file_path, mode='w', newline='\n') as f:
         frame.to_csv(f, float_format='%.2f', index=False, header=True)
-    
+##    
     # Look at parameters used by our current forest
 ##    arr = model5.get_feature_importance()
 ##    print(arr)
