@@ -52,10 +52,10 @@ df = pd.read_csv(input_file)
 ##with pd.option_context('display.max_columns', None):
 ##  print(df)
 ##print(df.isnull().sum())
-df.dropna(inplace= True)
-df.reset_index(drop=True,inplace= True)
+##df.dropna(inplace= True)
+##df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
-##df.fillna(df.mean(), inplace=True)
+df.fillna(df.mean(), inplace=True)
 ##with pd.option_context('display.max_columns', None):
 ##  print(df)
 ##df.fillna(-999, inplace=True)
@@ -68,7 +68,7 @@ X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
 ##X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
 X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
 X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
-X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
+##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
 ##
 X["drop_time"] = X["drop_time"].astype('datetime64[m]')
 
@@ -78,7 +78,7 @@ X["drop_time"] = X["drop_time"].astype('datetime64[m]')
 ##X["drop_week"] = X["drop_time"].dt.week.astype('float')
 X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
 X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
-X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
+##X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
 
 ##X["pickup_time"]= X["pickup_time"].dt.time
 ##X["drop_time"]= X["drop_time"].dt.time
@@ -122,9 +122,9 @@ y = df["output_label"]
 ##    print(y)
 input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
-df2.dropna(inplace= True)
-df2.reset_index(drop=True,inplace= True)
-##df.fillna(df.mean(), inplace=True)
+##df2.dropna(inplace= True)
+##df2.reset_index(drop=True,inplace= True)
+df.fillna(df.mean(), inplace=True)
 ##df2.fillna(-999, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
@@ -135,7 +135,7 @@ X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
 ##X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
 X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
 X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
-X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
+##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
 ##
 X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
 ##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
@@ -144,7 +144,7 @@ X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
 ##X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
 X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
 X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
-X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
+##X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
 ####with pd.option_context('display.max_columns', None):  
 ####    print(X2)
 ##print(X2.dtypes)
@@ -311,7 +311,7 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     print(X_train.dtypes)
     print(categorical_features_indices)
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=179) #249 for test 209 for validate
+    model5 = CatBoostClassifier(iterations=186) 
 ##    model5 = Pipeline((
 ##      ("standard_scaler", StandardScaler()),
 ##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
