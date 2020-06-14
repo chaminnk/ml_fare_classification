@@ -25,7 +25,7 @@ from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import RepeatedStratifiedKFold
 from matplotlib import pyplot
 from pyproj import Geod
-
+from imblearn.over_sampling import SMOTE
 
 wgs84_geod = Geod(ellps='WGS84') #Distance will be measured on this ellipsoid - more accurate than a spherical method
 
@@ -175,6 +175,18 @@ X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
 ##X2 = X2.iloc[:,:].values
 ##print(X2)
 #print (df.iloc[4080:4085])
+print("Before OverSampling, counts of label '1': {}".format(sum(y==1)))
+print("Before OverSampling, counts of label '0': {} \n".format(sum(y==0)))
+#oversampling
+##X.fillna(0, inplace=True)
+##sm = SMOTE(random_state=2)
+##X_res, y_res = sm.fit_sample(X, y.ravel())
+##
+##print('After OverSampling, the shape of X: {}'.format(X_res.shape))
+##print('After OverSampling, the shape of y: {} \n'.format(y_res.shape))
+##
+##print("After OverSampling, counts of label '1': {}".format(sum(y_res==1)))
+##print("After OverSampling, counts of label '0': {}".format(sum(y_res==0)))
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
 ##print(len(X))
 lr = 0.404
@@ -327,11 +339,12 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
 ##    weight = incorrect_sum/correct_sum #to handle imbalanced nature
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
 ##    model5 = CatBoostClassifier(scale_pos_weight=weight, iterations=136, verbose=100)0.9682411736256651
-    model5 = CatBoostClassifier(iterations=206, verbose=100) #117 121 ,iterations=115 for no nan fill
+##    model5 = CatBoostClassifier(iterations = 496,l2_leaf_reg = 3, verbose=100) #272 206 496
+    model5 = CatBoostClassifier(iterations = 489, verbose=100)
+##    model5 = CatBoostClassifier(iterations = 4000, verbose=100) 
 
 
-
-##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
+##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=1000)
     model5.fit(X_train, y_train,cat_features=categorical_features_indices)
 ##
     y_pred=model5.predict(X_test)
