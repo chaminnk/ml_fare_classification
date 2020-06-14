@@ -55,9 +55,9 @@ df = pd.read_csv(input_file)
 ##df.dropna(inplace= True)
 ##df.reset_index(drop=True,inplace= True)
 ##df = df.dropna(how = 'any', axis = 'rows')
-df.fillna(df.mean(), inplace=True)
-##with pd.option_context('display.max_columns', None):
-##  print(df)
+##df.fillna(df.mean(), inplace=True)
+####with pd.option_context('display.max_columns', None):
+####  print(df)
 ##df.fillna(-999, inplace=True)
 X = df
 ##X = df.drop(columns=["tripid", "pickup_time","drop_time","label"])
@@ -66,19 +66,18 @@ X["pickup_time"] = X["pickup_time"].astype('datetime64[m]')
 ##X["pickup_month"] = X["pickup_time"].dt.month.astype('float')
 ##X["pickup_day"] = X["pickup_time"].dt.day.astype('float')
 ##X["pickup_week"] = X["pickup_time"].dt.week.astype('float')
-X["pickup_hour"] = X["pickup_time"].dt.hour.astype('float')
-X["pickup_minute"] = X["pickup_time"].dt.minute.astype('float')
-##X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('float')
+X["pickup_hour"] = X["pickup_time"].dt.hour.astype('int')
+X["pickup_minute"] = X["pickup_time"].dt.minute.astype('int')
+X["pickup_day_of_week"] = X["pickup_time"].dt.dayofweek.astype('int')
 ##
 X["drop_time"] = X["drop_time"].astype('datetime64[m]')
-
 ##X["drop_year"] = X["drop_time"].dt.year.astype('float')
 ##X["drop_month"] = X["drop_time"].dt.month.astype('float')
 ##X["drop_day"] = X["drop_time"].dt.day.astype('float')
 ##X["drop_week"] = X["drop_time"].dt.week.astype('float')
-X["drop_hour"] = X["drop_time"].dt.hour.astype('float')
-X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
-##X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('float')
+X["drop_hour"] = X["drop_time"].dt.hour.astype('int')
+X["drop_minute"] = X["drop_time"].dt.minute.astype('int')
+X["drop_day_of_week"] = X["drop_time"].dt.dayofweek.astype('int')
 
 ##X["pickup_time"]= X["pickup_time"].dt.time
 ##X["drop_time"]= X["drop_time"].dt.time
@@ -94,13 +93,14 @@ X["drop_minute"] = X["drop_time"].dt.minute.astype('float')
 ##X["delay"] = X["delay"]-X["duration"]
 X["mobile_duration"] = X["duration"]-X["meter_waiting"]
 X['total_duration'] = X['duration']+X['meter_waiting_till_pickup']
-X['fare_duration_ratio'] = X['fare']/X['total_duration'] #assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X['fare_duration_ratio'] = X['fare']/X['total_duration'] #assuming Fare = additional + meter wait + mobile and additional=wait til pickup fares+other
 X['meter_waiting_fare_duration_ratio'] = X['meter_waiting_fare']/X['meter_waiting']
 X['distance'] = Distance(X['pick_lat'].tolist(),X['pick_lon'].tolist(),X['drop_lat'].tolist(),X['drop_lon'].tolist())
 X['fare_distance_ratio'] = X['fare']/X['distance']
-X['fare2']=X['fare']-X['meter_waiting_fare']-X['additional_fare']#assuming Fare = additional + meter wait + mobile + wait til pickup fares
-X['fare2_time_ratio'] = X['fare2']/(X["mobile_duration"]+X['meter_waiting_till_pickup'])
-X['additional_fare_distance_ratio'] = X['additional_fare']/X['distance']
+X['mobile_fare']=X['fare']-X['meter_waiting_fare']-X['additional_fare']#assuming Fare = additional + meter wait + mobile
+X['mobile_fare_time_ratio'] = X['mobile_fare']/(X["mobile_duration"])
+X['mobile_fare_distance_ratio'] = X['mobile_fare']/X['distance']
+X['additional_fare_duration_ratio'] = X['additional_fare']/X['meter_waiting_till_pickup']
 ##X = df.drop(columns=["tripid","pickup_time","drop_time","pick_lat","pick_lon","drop_lat","drop_lon","label"])
 X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
 ##with pd.option_context('display.max_columns', None):  
@@ -110,8 +110,10 @@ X = df.drop(columns=["tripid","pickup_time","drop_time","label"])
 ##    print(X)
 ##print(X.dtypes)
 ##
+##with pd.option_context('display.max_columns', None):
+##  print(X.describe())
 ##with pd.option_context('display.max_rows', None):  
-##    print(X.drop_day_of_week)
+##    print(X.meter_waiting_fare_duration_ratio)
 ##X = X.iloc[:,:].values
 ##print(X)
 
@@ -122,9 +124,10 @@ y = df["output_label"]
 ##    print(y)
 input_file2 = "test.csv"
 df2 = pd.read_csv(input_file2)
+##print(df2.isnull().sum())
 ##df2.dropna(inplace= True)
 ##df2.reset_index(drop=True,inplace= True)
-df.fillna(df.mean(), inplace=True)
+##df2.fillna(df.mean(), inplace=True)
 ##df2.fillna(-999, inplace=True)
 tripid_test = np.asarray(df2.iloc[:, 0].values)
 X2 = df2
@@ -133,18 +136,18 @@ X2["pickup_time"] = X2["pickup_time"].astype('datetime64[m]')
 ##X2["pickup_month"] = X2["pickup_time"].dt.month.astype('float')
 ##X2["pickup_day"] = X2["pickup_time"].dt.day.astype('float')
 ##X2["pickup_week"] = X2["pickup_time"].dt.week.astype('float')
-X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('float')
-X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('float')
-##X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('float')
+X2["pickup_hour"] = X2["pickup_time"].dt.hour.astype('int')
+X2["pickup_minute"] = X2["pickup_time"].dt.minute.astype('int')
+X2["pickup_day_of_week"] = X2["pickup_time"].dt.dayofweek.astype('int')
 ##
 X2["drop_time"] = X2["drop_time"].astype('datetime64[m]')
 ##X2["drop_year"] = X2["drop_time"].dt.year.astype('float')
 ##X2["drop_month"] = X2["drop_time"].dt.month.astype('float')
 ##X2["drop_day"] = X2["drop_time"].dt.day.astype('float')
 ##X2["drop_week"] = X2["drop_time"].dt.week.astype('float')
-X2["drop_hour"] = X2["drop_time"].dt.hour.astype('float')
-X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
-##X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('float')
+X2["drop_hour"] = X2["drop_time"].dt.hour.astype('int')
+X2["drop_minute"] = X2["drop_time"].dt.minute.astype('int')
+X2["drop_day_of_week"] = X2["drop_time"].dt.dayofweek.astype('int')
 ####with pd.option_context('display.max_columns', None):  
 ####    print(X2)
 ##print(X2.dtypes)
@@ -155,13 +158,14 @@ X2["drop_minute"] = X2["drop_time"].dt.minute.astype('float')
 ##X2["delay"] = X2["delay"]-X2["duration"]
 X2["mobile_duration"] = X2["duration"]-X2["meter_waiting"]
 X2['total_duration'] = X2['duration']+X2['meter_waiting_till_pickup']
-X2['fare_duration_ratio'] = X2['fare']/X2['total_duration'] #assuming Fare = additional + meter wait + mobile + wait til pickup fares
+X2['fare_duration_ratio'] = X2['fare']/X2['total_duration'] #assuming Fare = additional + meter wait + mobile and additional=wait til pickup fares+other
 X2['meter_waiting_fare_duration_ratio'] = X2['meter_waiting_fare']/X2['meter_waiting']
 X2['distance'] = Distance(X2['pick_lat'].tolist(),X2['pick_lon'].tolist(),X2['drop_lat'].tolist(),X2['drop_lon'].tolist())
 X2['fare_distance_ratio'] = X2['fare']/X2['distance']
-X2['fare2']=X2['fare']-X2['meter_waiting_fare']-X2['additional_fare']#assuming Fare = additional + meter wait + mobile + wait til pickup fares
-X2['fare2_time_ratio'] = X2['fare2']/(X2["mobile_duration"]+X2['meter_waiting_till_pickup'])
-X2['additional_fare_distance_ratio'] = X2['additional_fare']/X2['distance']
+X2['mobile_fare']=X2['fare']-X2['meter_waiting_fare']-X2['additional_fare']#assuming Fare = additional + meter wait + mobile
+X2['mobile_fare_time_ratio'] = X2['mobile_fare']/(X2["mobile_duration"])
+X2['mobile_fare_distance_ratio'] = X2['mobile_fare']/X2['distance']
+X2['additional_fare_duration_ratio'] = X2['additional_fare']/X2['meter_waiting_till_pickup']
 X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
 #X2 = df2.drop(columns=["tripid"])
 ##with pd.option_context('display.max_columns', None):  
@@ -258,7 +262,7 @@ def xgboostModel(X_train,X_test,y_train,y_test,tripid_test):
 ##              objective='binary:logistic', random_state=0, reg_alpha=0.3,
 ##              reg_lambda=1, scale_pos_weight=1, silent=False, subsample=1.0,
 ##              tree_method=None, validate_parameters=False, verbosity=None)
-    model4 = XGBClassifier(n_estimators=90)
+    model4 = XGBClassifier(scale_pos_weight=1,n_estimators=90)
 ##    model4 = Pipeline((
 ##      ("standard_scaler", StandardScaler()),
 ##      ("xgb", XGBClassifier(n_estimators=90)),
@@ -310,12 +314,22 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
     print(X_train.dtypes)
     print(categorical_features_indices)
+    incorrect_sum = 0
+    correct_sum = 0
+    for val in y_train:
+      if val == 0:
+        incorrect_sum+=1
+      else:
+        correct_sum+=1
+    print(incorrect_sum)
+    print(correct_sum)
+    print(categorical_features_indices)
+##    weight = incorrect_sum/correct_sum #to handle imbalanced nature
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
-    model5 = CatBoostClassifier(iterations=186) 
-##    model5 = Pipeline((
-##      ("standard_scaler", StandardScaler()),
-##      ("catboost", CatBoostClassifier(iterations=214, verbose = 100)),
-##      ))
+##    model5 = CatBoostClassifier(scale_pos_weight=weight, iterations=136, verbose=100)0.9682411736256651
+    model5 = CatBoostClassifier(iterations=206, verbose=100) #117 121 ,iterations=115 for no nan fill
+
+
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=10)
     model5.fit(X_train, y_train,cat_features=categorical_features_indices)
@@ -323,12 +337,14 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
 ####
-##    feature_importance = model5.get_feature_importance(data=train_pool, type=EFstrType.FeatureImportance, prettified=True, thread_count=-1)
-##    feature_importance_df = pd.DataFrame(feature_importance, columns=['Feature Id', 'Importances'])
-##    feature_importance_df['Feature Id'] = feature_importance_df['Feature Id'].apply(lambda b: b)
-##    feature_importance_df.set_index('Feature Id').plot(kind='barh', figsize=(18, 10), fontsize=14)
+##    fea_imp = pd.DataFrame({'imp': model5.feature_importances_, 'col': X_train.columns})
+##    fea_imp = fea_imp.sort_values(['imp', 'col'], ascending=[True, False]).iloc[-30:]
+##    fea_imp.plot(kind='barh', x='col', y='imp', figsize=(10, 7), legend=None)
+##    plt.title('CatBoost - Feature Importance')
+##    plt.ylabel('Features')
+##    plt.xlabel('Importance')
 ##    pyplot.show()
-
+    
     data = np.column_stack([tripid_test, y_pred])
     label = ["tripid", "prediction"]
     frame = pd.DataFrame(data, columns=label)
