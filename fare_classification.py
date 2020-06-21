@@ -175,8 +175,8 @@ X2 = df2.drop(columns=["tripid","pickup_time","drop_time"])
 ##X2 = X2.iloc[:,:].values
 ##print(X2)
 #print (df.iloc[4080:4085])
-print("Before OverSampling, counts of label '1': {}".format(sum(y==1)))
-print("Before OverSampling, counts of label '0': {} \n".format(sum(y==0)))
+##print("Before OverSampling, counts of label '1': {}".format(sum(y==1)))
+##print("Before OverSampling, counts of label '0': {} \n".format(sum(y==0)))
 #oversampling
 ##X.fillna(0, inplace=True)
 ##sm = SMOTE(random_state=2)
@@ -324,29 +324,30 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
 ##    eval_pool = Pool(X_test, y_test) #pool for eval_set
     train_pool = Pool(X_train, y_train)
     categorical_features_indices = np.where(X_train.dtypes != np.float)[0]
-    print(X_train.dtypes)
-    print(categorical_features_indices)
-    incorrect_sum = 0
-    correct_sum = 0
-    for val in y_train:
-      if val == 0:
-        incorrect_sum+=1
-      else:
-        correct_sum+=1
-    print(incorrect_sum)
-    print(correct_sum)
-    print(categorical_features_indices)
+##    print(X_train.dtypes)
+##    print(categorical_features_indices)
+##    incorrect_sum = 0
+##    correct_sum = 0
+##    for val in y_train:
+##      if val == 0:
+##        incorrect_sum+=1
+##      else:
+##        correct_sum+=1
+##    print(incorrect_sum)
+##    print(correct_sum)
+##    print(categorical_features_indices)
 ##    weight = incorrect_sum/correct_sum #to handle imbalanced nature
 ##    model5 = CatBoostClassifier(iterations=310, depth=3, learning_rate=0.408)
 ##    model5 = CatBoostClassifier(scale_pos_weight=weight, iterations=136, verbose=100)0.9682411736256651
 ##    model5 = CatBoostClassifier(iterations = 496,l2_leaf_reg = 3, verbose=100) #272 206 496
-    model5 = CatBoostClassifier(iterations = 489, verbose=100)
+    
 ##    model5 = CatBoostClassifier(iterations = 4000, verbose=100) 
 
 
 ##    model5.fit(X_train, y_train, eval_set=eval_pool, early_stopping_rounds=1000)
+    model5 = CatBoostClassifier(iterations = 489, verbose=100)
     model5.fit(X_train, y_train,cat_features=categorical_features_indices)
-##
+    
     y_pred=model5.predict(X_test)
 ##    print(f1_score(y_test,y_pred))
 ####
@@ -368,8 +369,9 @@ def catBoost(X_train,X_test,y_train,y_test,tripid_test):
     # Look at parameters used by our current forest
 ##    arr = model5.get_feature_importance()
 ##    print(arr)
+    print("Output file 'catboost_output.csv' is created")
     print('Parameters currently in use:\n')
-    print(model5.get_params())
+    print(model5.get_all_params())
     
 def randomForestModel(X_train,X_test,y_train,y_test,tripid_test):
     print("Random forest")
